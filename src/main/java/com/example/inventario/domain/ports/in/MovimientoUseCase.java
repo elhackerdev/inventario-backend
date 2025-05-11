@@ -12,6 +12,8 @@ public interface MovimientoUseCase {
     // Obtener un movimiento por su ID
     Movimiento obtenerMovimientoPorId(Long id);
 
+    Movimiento registrarMovimiento(Movimiento movimiento);
+
     // Obtener el historial de movimientos de un producto específico
     List<Movimiento> obtenerMovimientosPorProducto(Long idProducto);
 

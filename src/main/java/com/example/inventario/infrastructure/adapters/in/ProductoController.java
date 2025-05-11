@@ -5,20 +5,21 @@ import com.example.inventario.domain.model.Producto;
 import com.example.inventario.domain.ports.in.ProductoUseCase;
 import com.example.inventario.infrastructure.config.mapper.ProductoMapper;
 import com.example.inventario.infrastructure.adapters.in.dto.ProductoDTO;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/productos")
-@Api(tags = "Productos")
+@Validated
 public class ProductoController {
 
     private final ProductoUseCase productoUseCase;
@@ -30,22 +31,23 @@ public class ProductoController {
     }
 
     @PostMapping
-    @ApiOperation(value = "Crear un nuevo producto", response = ProductoDTO.class)
+    @Operation(summary = "Crear un nuevo producto")
     @ApiResponses({
-            @ApiResponse(code = 201, message = "Producto creado exitosamente"),
-            @ApiResponse(code = 400, message = "Error de validación o formato incorrecto")
+            @ApiResponse(responseCode = "201", description = "Producto creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Error de validación o formato incorrecto")
     })
     public ResponseEntity<ProductoDTO> crear(@Valid @RequestBody ProductoDTO dto) {
+
         Producto producto = mapper.dtoToEntity(dto);
         Producto creado = productoUseCase.crearProducto(producto);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapper.entityToDto(creado));
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Obtener un producto por ID", response = ProductoDTO.class)
+    @Operation(summary = "Obtener un producto por ID")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Producto encontrado"),
-            @ApiResponse(code = 404, message = "Producto no encontrado")
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     public ResponseEntity<ProductoDTO> obtenerPorId(@PathVariable Long id) {
         try {
@@ -57,20 +59,22 @@ public class ProductoController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Obtener todos los productos", response = List.class)
+    @Operation(summary = "Obtener todos los productos por nombre, categoria,codigo")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Productos encontrados")
+            @ApiResponse(responseCode = "200", description = "Productos encontrados")
     })
-    public ResponseEntity<List<ProductoDTO>> obtenerTodos() {
-        List<Producto> productos = productoUseCase.buscarProductos(null, null, null);
+    public ResponseEntity<List<ProductoDTO>> obtenerTodos(@RequestParam(required = false) String nombre,
+                                                          @RequestParam(required = false) String categoria,
+                                                          @RequestParam(required = false) String codigo) {
+        List<Producto> productos = productoUseCase.buscarProductos(nombre, categoria, codigo);
         return ResponseEntity.ok(mapper.entitiesToDtos(productos));
     }
 
     @PutMapping("/{id}")
-    @ApiOperation(value = "Actualizar un producto", response = ProductoDTO.class)
+    @Operation(summary = "Actualizar un producto")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Producto actualizado exitosamente"),
-            @ApiResponse(code = 404, message = "Producto no encontrado")
+            @ApiResponse(responseCode = "200", description = "Producto actualizado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     public ResponseEntity<ProductoDTO> actualizar(@PathVariable Long id, @Valid @RequestBody ProductoDTO dto) {
         try {
@@ -83,10 +87,10 @@ public class ProductoController {
     }
 
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "Eliminar un producto")
+    @Operation(summary = "Eliminar un producto")
     @ApiResponses({
-            @ApiResponse(code = 204, message = "Producto eliminado exitosamente"),
-            @ApiResponse(code = 404, message = "Producto no encontrado")
+            @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         try {

@@ -3,6 +3,7 @@ package com.example.inventario.infrastructure.adapters.out;
 import com.example.inventario.domain.model.Producto;
 import com.example.inventario.domain.ports.out.ProductoRepositoryPort;
 import com.example.inventario.infrastructure.config.mapper.ProductoMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,9 +23,8 @@ public class ProductoJpaAdapter implements ProductoRepositoryPort {
 
     @Override
     public Producto guardar(Producto producto) {
-        Producto entity = mapper.toEntity(producto);
-        Producto saved = jpaRepository.save(entity);
-        return mapper.toDomain(saved);
+        Producto saved = jpaRepository.save(producto);
+        return saved;
     }
 
     @Override
@@ -35,20 +35,14 @@ public class ProductoJpaAdapter implements ProductoRepositoryPort {
 
     @Override
     public Optional<Producto> buscarPorCodigo(String codigo) {
-        return Optional.empty();
+        return jpaRepository.findByCodigo(codigo);
     }
 
     @Override
+    @Transactional
     public List<Producto> buscarPorCriterios(String nombre, String categoria, String codigo) {
         // Este método depende de una consulta personalizada en JpaProductoRepository
-        return jpaRepository
-                .findByNombreContainingIgnoreCaseAndCategoriaAndCodigo(
-                        nombre != null ? nombre : "",
-                        categoria != null ? categoria : "",
-                        codigo != null ? codigo : ""
-                ).stream()
-                .map(mapper::toDomain)
-                .collect(Collectors.toList());
+        return jpaRepository.buscar_productos(nombre,categoria,codigo);
     }
 
     @Override

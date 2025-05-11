@@ -1,7 +1,11 @@
 package com.example.inventario.infrastructure.adapters.in.dto;
+import jakarta.persistence.Entity;
+
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+
 public class ProductoDTO {
+
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")

@@ -1,21 +1,40 @@
 package com.example.inventario.infrastructure.config.mapper;
 
 import com.example.inventario.domain.model.Movimiento;
+import com.example.inventario.domain.model.Producto;
 import com.example.inventario.infrastructure.adapters.in.dto.MovimientoDTO;
+import com.example.inventario.infrastructure.adapters.out.MovimientoEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+
 
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MovimientoMapper {
 
-    Movimiento dtoToEntity(MovimientoDTO dto);
+    // ======== Entity <-> Domain ========
+    Movimiento toDomain(MovimientoEntity entity);
+    MovimientoEntity toEntity(Movimiento domain);
 
-    MovimientoDTO entityToDto(Movimiento movimiento);
 
-    List<MovimientoDTO> entityListToDtoList(List<Movimiento> movimientos);
+    // ======== DTO -> Domain ========
+    @Mapping(source = "idProducto", target = "producto", qualifiedByName = "mapProductoFromId")
+    Movimiento dtoToDomain(MovimientoDTO dto);
 
-    Movimiento toEntity(Movimiento movimiento);
+    // ======== Domain -> DTO ========
+    @Mapping(source = "producto.id", target = "idProducto")
+    MovimientoDTO domainToDto(Movimiento movimiento);
 
-    Movimiento toDomain(Movimiento guardado);
+    List<MovimientoDTO> domainListToDtoList(List<Movimiento> movimientos);
+
+    // ======== Mapper auxiliar ========
+    @Named("mapProductoFromId")
+    default Producto mapProductoFromId(Long id) {
+        if (id == null) return null;
+        Producto producto = new Producto();
+        producto.setId(id);
+        return producto;
+    }
 }

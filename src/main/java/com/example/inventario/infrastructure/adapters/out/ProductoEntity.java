@@ -1,4 +1,4 @@
-package com.example.inventario.domain.model;
+package com.example.inventario.infrastructure.adapters.out;
 
 import jakarta.persistence.*;
 
@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Entity
 @Table(name = "producto",schema = "public")
-public class Producto {
+public class ProductoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class Producto {
     private LocalDateTime fechaCreacion;
     private double factorDeRotacion;
 
-    public Producto(Long id, String nombre, String descripcion, BigDecimal precio, int stock,
+    public ProductoEntity(Long id, String nombre, String descripcion, BigDecimal precio, int stock,
                     String categoria, String codigo, LocalDateTime fechaCreacion) {
         this.id = id;
         this.nombre = nombre;
@@ -34,9 +34,6 @@ public class Producto {
         this.factorDeRotacion = 0.0;
     }
 
-    public Producto() {
-
-    }
 
     public Long getId() {
         return id;
@@ -97,6 +94,7 @@ public class Producto {
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
+
     @PrePersist
     public void prePersist() {
         if (fechaCreacion == null) {
@@ -134,5 +132,4 @@ public class Producto {
         }
         this.factorDeRotacion = (double) totalMovimientos / periodoDias;
     }
-
 }
