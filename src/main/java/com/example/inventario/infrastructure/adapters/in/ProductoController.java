@@ -26,8 +26,7 @@ public class ProductoController {
 
     private final ProductoUseCase productoUseCase;
     private final ProductoMapper mapper;
-    @Autowired
-    private StockService stockService;
+
 
     public ProductoController(ProductoUseCase productoUseCase, ProductoMapper mapper) {
         this.productoUseCase = productoUseCase;
@@ -105,9 +104,5 @@ public class ProductoController {
         }
     }
 
-    @PostMapping("/verificar-stock")
-    public void verificarStock(@RequestBody Producto producto) {
-        // Verificar si el stock es bajo
-        stockService.verificarStockBajo(producto, 10);
-    }
+
 }
