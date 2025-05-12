@@ -8,6 +8,7 @@ import com.example.inventario.domain.model.Producto;
 import com.example.inventario.domain.ports.in.MovimientoUseCase;
 import com.example.inventario.domain.ports.out.MovimientoRepositoryPort;
 import com.example.inventario.domain.ports.out.ProductoRepositoryPort;
+import com.example.inventario.infrastructure.adapters.in.dto.ResultadoOperacionDTO;
 import com.example.inventario.infrastructure.adapters.out.MovimientoEntity;
 import com.example.inventario.infrastructure.config.mapper.MovimientoMapper;
 import org.springframework.stereotype.Service;
@@ -20,17 +21,30 @@ public class MovimientoService implements MovimientoUseCase {
 
     private final MovimientoRepositoryPort movimientoRepository;
     private final ProductoRepositoryPort productoRepository;
+    private final ProductoService productoService;
     private final MovimientoMapper mapper;
 
-    public MovimientoService(MovimientoRepositoryPort movimientoRepository, ProductoRepositoryPort productoRepository, MovimientoMapper mapper) {
+    public MovimientoService(MovimientoRepositoryPort movimientoRepository, ProductoRepositoryPort productoRepository, ProductoService productoService, MovimientoMapper mapper) {
         this.movimientoRepository = movimientoRepository;
         this.productoRepository = productoRepository;
+        this.productoService = productoService;
         this.mapper = mapper;
     }
 
     @Override
     public Movimiento crearMovimiento(Movimiento movimiento) {
-        return movimientoRepository.guardar(movimiento);
+        // Obtener el producto relacionado con el movimiento
+        Producto producto = productoRepository.buscarPorId(movimiento.getProducto().getId())
+                .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
+
+        if (movimiento.getTipo() == Movimiento.TipoMovimiento.ENTRADA) {
+            productoService.entradaStock(producto.getId(),movimiento.getCantidad());
+        } else if (movimiento.getTipo() == Movimiento.TipoMovimiento.SALIDA) {
+            productoService.salidaStock(producto.getId(),movimiento.getCantidad());
+        }
+        Movimiento movimientoGuardado = movimientoRepository.guardar(movimiento);
+
+        return movimientoGuardado;
     }
 
     @Override
@@ -47,19 +61,13 @@ public class MovimientoService implements MovimientoUseCase {
 
         // Dependiendo del tipo de movimiento, realizar la entrada o salida de stock
         if (movimiento.getTipo() == Movimiento.TipoMovimiento.ENTRADA) {
-            producto.setStock(producto.getStock() + movimiento.getCantidad());
+            productoService.entradaStock(producto.getId(),movimiento.getCantidad());
         } else if (movimiento.getTipo() == Movimiento.TipoMovimiento.SALIDA) {
-            if (producto.getStock() < movimiento.getCantidad()) {
-                throw new InvalidStockException("Stock insuficiente para la salida.");
-            }
-            producto.setStock(producto.getStock() - movimiento.getCantidad());
+           productoService.salidaStock(producto.getId(),movimiento.getCantidad());
         }
-
         // Guardar el movimiento en la base de datos
         Movimiento movimientoGuardado = movimientoRepository.guardar(movimiento);
 
-        // Actualizar el stock del producto en la base de datos
-        productoRepository.guardar(producto);
 
         return movimientoGuardado;
     }
@@ -107,14 +115,12 @@ public class MovimientoService implements MovimientoUseCase {
         Producto producto = productoRepository.buscarPorId(movimiento.getProducto().getId())
                 .orElseThrow(() -> new ProductoNotFoundException("Producto no encontrado"));
 
-        if (movimiento.getTipo() == Movimiento.TipoMovimiento.ENTRADA) {
-            producto.setStock(producto.getStock() - movimiento.getCantidad());
-        } else if (movimiento.getTipo() == Movimiento.TipoMovimiento.SALIDA) {
-            producto.setStock(producto.getStock() + movimiento.getCantidad());
-        }
+       if (movimiento.getTipo() == Movimiento.TipoMovimiento.ENTRADA) {
+            productoService.salidaStock(producto.getId(),movimiento.getCantidad());
 
-        // Guardar los cambios en el producto
-        productoRepository.guardar(producto);
+        } else if (movimiento.getTipo() == Movimiento.TipoMovimiento.SALIDA) {
+            productoService.entradaStock(producto.getId(),movimiento.getCantidad());
+        }
     }
 
     @Override

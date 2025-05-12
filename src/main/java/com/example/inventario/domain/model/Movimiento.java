@@ -15,6 +15,9 @@ public class Movimiento {
     private int cantidad;
     private LocalDateTime fecha;
     private String descripcion;
+public Movimiento(){
+
+}
 
     public Movimiento(Long id, Producto producto, TipoMovimiento tipo, int cantidad,
                       LocalDateTime fecha, String descripcion) {

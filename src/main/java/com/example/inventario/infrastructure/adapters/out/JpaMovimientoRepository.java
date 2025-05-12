@@ -3,6 +3,8 @@ package com.example.inventario.infrastructure.adapters.out;
 
 import com.example.inventario.domain.model.Movimiento;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 
 import java.util.List;
@@ -16,4 +18,7 @@ public interface JpaMovimientoRepository extends JpaRepository<MovimientoEntity,
 
 
     List<MovimientoEntity> findByTipo(Movimiento.TipoMovimiento tipo);
+
+    @Query("SELECT SUM(m.cantidad * m.producto.precio) FROM MovimientoEntity m WHERE m.producto.id = :productoId AND m.tipo = 'SALIDA'")
+    Double sumarCostoVentasPorProducto(@Param("productoId") Long productoId);
 }

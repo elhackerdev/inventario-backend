@@ -104,4 +104,9 @@ public class MovimientoJpaAdapter implements MovimientoRepositoryPort {
     public List<MovimientoEntity> findAll() {
         return jpaRepository.findAll();
     }
+
+    @Override
+    public Double sumarCostoVentasPorProducto(Long productoId) {
+        return 0.0;
+    }
 }

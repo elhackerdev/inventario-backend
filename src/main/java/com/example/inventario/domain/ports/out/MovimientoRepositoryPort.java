@@ -2,6 +2,7 @@ package com.example.inventario.domain.ports.out;
 
 import com.example.inventario.domain.model.Movimiento;
 import com.example.inventario.infrastructure.adapters.out.MovimientoEntity;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,4 +37,6 @@ public interface MovimientoRepositoryPort {
     List<MovimientoEntity> findByTipo(Movimiento.TipoMovimiento tipoMovimiento);
 
     List<MovimientoEntity> findAll();
+
+    Double sumarCostoVentasPorProducto(@Param("productoId") Long productoId);
 }

@@ -1,8 +1,9 @@
 package com.example.inventario.infrastructure.adapters.in;
 
+import com.example.inventario.application.service.ProductoService;
 import com.example.inventario.domain.model.Movimiento;
 import com.example.inventario.domain.ports.in.MovimientoUseCase;
-import com.example.inventario.infrastructure.adapters.out.MovimientoEntity;
+import com.example.inventario.infrastructure.adapters.in.dto.ResultadoOperacionDTO;
 import com.example.inventario.infrastructure.config.mapper.MovimientoMapper;
 import com.example.inventario.infrastructure.adapters.in.dto.MovimientoDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,17 +16,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/movimientos")
 public class MovimientoController {
 
     private final MovimientoUseCase movimientoUseCase;
     private final MovimientoMapper mapper;
+    private final ProductoService productoService;
 
-    public MovimientoController(MovimientoUseCase movimientoUseCase, MovimientoMapper mapper) {
+    public MovimientoController(MovimientoUseCase movimientoUseCase, MovimientoMapper mapper, ProductoService productoService) {
         this.movimientoUseCase = movimientoUseCase;
         this.mapper = mapper;
+        this.productoService = productoService;
     }
 
     @Operation(summary = "Crear un nuevo movimiento", description = "Crea un nuevo movimiento de entrada o salida")
@@ -34,10 +37,11 @@ public class MovimientoController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     @PostMapping
-    public ResponseEntity<MovimientoDTO> crearMovimiento(@Valid @RequestBody MovimientoDTO dto) {
+    public ResponseEntity<ResultadoOperacionDTO> crearMovimiento(@Valid @RequestBody MovimientoDTO dto) {
         Movimiento movimiento = mapper.dtoToDomain(dto);
         Movimiento creado = movimientoUseCase.crearMovimiento(movimiento);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapper.domainToDto(creado));
+        ResultadoOperacionDTO creadoMasStock = productoService.verificarStockMinimo(creado.getProducto().getId(), mapper.domainToDto(creado));
+        return ResponseEntity.status(HttpStatus.CREATED).body(creadoMasStock);
     }
 
     @Operation(summary = "Obtener un movimiento por ID", description = "Devuelve el movimiento correspondiente al ID dado")

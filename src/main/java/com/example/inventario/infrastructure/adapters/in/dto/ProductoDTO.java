@@ -3,6 +3,7 @@ import jakarta.persistence.Entity;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class ProductoDTO {
 
@@ -28,6 +29,15 @@ public class ProductoDTO {
     @NotBlank(message = "El código es obligatorio")
     @Size(max = 20, message = "El código no debe exceder 20 caracteres")
     private String codigo;
+    private LocalDateTime fechaCreacion;
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
 
     public Long getId() {
         return id;

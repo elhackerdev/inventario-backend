@@ -1,5 +1,8 @@
 package com.example.inventario.infrastructure.adapters.in.dto;
 import jakarta.validation.constraints.*;
+
+import java.time.LocalDateTime;
+
 public class MovimientoDTO {
 
     private Long id;
@@ -15,6 +18,26 @@ public class MovimientoDTO {
 
     @Size(max = 255, message = "La descripción no debe exceder 255 caracteres")
     private String descripcion;
+
+    private LocalDateTime fecha;
+
+    public String nombreProducto;
+
+    public String getNombreProducto() {
+        return nombreProducto;
+    }
+
+    public void setNombreProducto(String nombreProducto) {
+        this.nombreProducto = nombreProducto;
+    }
+
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
+    }
 
     public Long getId() {
         return id;

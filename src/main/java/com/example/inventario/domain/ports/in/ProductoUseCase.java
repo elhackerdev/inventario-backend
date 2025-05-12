@@ -1,6 +1,8 @@
 package com.example.inventario.domain.ports.in;
 
 import com.example.inventario.domain.model.Producto;
+import com.example.inventario.infrastructure.adapters.in.dto.MovimientoDTO;
+import com.example.inventario.infrastructure.adapters.in.dto.ResultadoOperacionDTO;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ public interface ProductoUseCase {
     Producto salidaStock(Long idProducto, int cantidad);
 
     // Verificación y lógica de negocio
-    void verificarStockMinimo(Long idProducto);
+    ResultadoOperacionDTO verificarStockMinimo(Long idProducto, MovimientoDTO movimiento);
 
-    void recalcularFactorDeRotacion(Long idProducto);
+    Producto recalcularFactorDeRotacion(Long idProducto);
 }

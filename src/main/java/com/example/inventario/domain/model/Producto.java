@@ -15,6 +15,7 @@ public class Producto {
     private String descripcion;
     private BigDecimal precio;
     private int stock;
+    private int inventarioInicial;
     private String categoria;
     @Column(nullable = false, unique = true)
     private String codigo;
@@ -32,6 +33,14 @@ public class Producto {
         this.codigo = codigo;
         this.fechaCreacion = fechaCreacion;
         this.factorDeRotacion = 0.0;
+    }
+
+    public int getInventarioInicial() {
+        return inventarioInicial;
+    }
+
+    public void setInventarioInicial(int inventarioInicial) {
+        this.inventarioInicial = inventarioInicial;
     }
 
     public Producto() {
@@ -116,23 +125,8 @@ public class Producto {
         this.factorDeRotacion = factorDeRotacion;
     }
 
-    public void actualizarStock(int cantidad, boolean esEntrada) {
-        if (esEntrada) {
-            this.stock += cantidad;
-        } else {
-            if (this.stock < cantidad) {
-                throw new IllegalArgumentException("Stock insuficiente para salida.");
-            }
-            this.stock -= cantidad;
-        }
-    }
-
-    public void calcularFactorDeRotacion(int totalMovimientos, int periodoDias) {
-        if (periodoDias == 0) {
-            this.factorDeRotacion = 0;
-            return;
-        }
-        this.factorDeRotacion = (double) totalMovimientos / periodoDias;
+    public boolean esStockBajo(int umbral) {
+        return this.stock < umbral;
     }
 
 }

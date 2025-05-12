@@ -12,6 +12,7 @@ public interface ProductoMapper {
     Producto dtoToEntity(ProductoDTO dto);
     ProductoDTO entityToDto(Producto producto);
 
+
     Producto toDomain(Producto productoEntity);
 
     List<ProductoDTO> entitiesToDtos(List<Producto> productos);

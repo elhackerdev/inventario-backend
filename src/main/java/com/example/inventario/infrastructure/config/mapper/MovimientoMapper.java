@@ -25,6 +25,7 @@ public interface MovimientoMapper {
 
     // ======== Domain -> DTO ========
     @Mapping(source = "producto.id", target = "idProducto")
+    @Mapping(source = "producto.nombre", target = "nombreProducto")
     MovimientoDTO domainToDto(Movimiento movimiento);
 
     List<MovimientoDTO> domainListToDtoList(List<Movimiento> movimientos);

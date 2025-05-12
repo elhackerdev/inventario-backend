@@ -3,7 +3,10 @@ package com.example.inventario.application.service;
 import com.example.inventario.domain.exceptions.ProductoNotFoundException;
 import com.example.inventario.domain.model.Producto;
 import com.example.inventario.domain.ports.in.ProductoUseCase;
+import com.example.inventario.domain.ports.out.MovimientoRepositoryPort;
 import com.example.inventario.domain.ports.out.ProductoRepositoryPort;
+import com.example.inventario.infrastructure.adapters.in.dto.MovimientoDTO;
+import com.example.inventario.infrastructure.adapters.in.dto.ResultadoOperacionDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +14,12 @@ import java.util.List;
 @Service
 public class ProductoService implements ProductoUseCase {
     private final ProductoRepositoryPort repository;
+    private final MovimientoRepositoryPort movimientoRepositoryPort;
 
-    public ProductoService(ProductoRepositoryPort repository) {
+
+    public ProductoService(ProductoRepositoryPort repository, MovimientoRepositoryPort movimientoRepositoryPort) {
         this.repository = repository;
+        this.movimientoRepositoryPort = movimientoRepositoryPort;
     }
 
     @Override
@@ -22,6 +28,7 @@ public class ProductoService implements ProductoUseCase {
         if (repository.buscarPorCodigo(producto.getCodigo()).isPresent()) {
             throw new RuntimeException("El código del producto ya está registrado.");
         }
+        producto.setInventarioInicial(producto.getStock());
 
         // Si no hay problemas, se guarda el producto
         return repository.guardar(producto);
@@ -46,6 +53,7 @@ public class ProductoService implements ProductoUseCase {
 
         // Aquí puedes actualizar los campos específicos, manteniendo el id
         producto.setId(id);
+        producto.setFechaCreacion(productoExistente.getFechaCreacion());
         return repository.guardar(producto);
     }
 
@@ -69,7 +77,8 @@ public class ProductoService implements ProductoUseCase {
 
         // Se ajusta el stock
         producto.setStock(producto.getStock() + cantidad);
-        return repository.guardar(producto);
+        repository.guardar(producto);
+        return recalcularFactorDeRotacion(idProducto);
     }
 
     @Override
@@ -87,33 +96,37 @@ public class ProductoService implements ProductoUseCase {
 
         // Se ajusta el stock
         producto.setStock(producto.getStock() - cantidad);
-        return repository.guardar(producto);
+
+        repository.guardar(producto);
+        return recalcularFactorDeRotacion(idProducto);
     }
 
     @Override
-    public void verificarStockMinimo(Long idProducto) {
+    public ResultadoOperacionDTO verificarStockMinimo(Long idProducto, MovimientoDTO movimiento) {
+
+        ResultadoOperacionDTO resultado = new ResultadoOperacionDTO();
         Producto producto = obtenerProductoPorId(idProducto);
 
         // Definir un umbral de stock bajo, por ejemplo, 10 unidades
         int umbralStockBajo = 10;
+        resultado.setMovimiento(movimiento);
+        resultado.setStockBajo(producto.getStock() < umbralStockBajo);
+        resultado.setCantidad(producto.getStock());
+        resultado.setNombreProducto(producto.getNombre());
 
-        if (producto.getStock() < umbralStockBajo) {
-            // Aquí podrías integrar el patrón Observer, enviando una alerta
-            // Notificar sobre stock bajo (esto depende de la implementación específica de Observer)
-            System.out.println("Alerta: El stock del producto " + producto.getNombre() + " es bajo.");
-        }
+
+        return  resultado;
     }
 
     @Override
-    public void recalcularFactorDeRotacion(Long idProducto) {
+    public Producto recalcularFactorDeRotacion(Long idProducto) {
         Producto producto = obtenerProductoPorId(idProducto);
-
-        // Lógica para recalcular el factor de rotación (puede depender de la cantidad de ventas, movimientos, etc.)
-        // Por ejemplo, podrías calcularlo basado en los movimientos históricos.
-        // A continuación, simplemente lo dejamos en un valor ficticio por ahora
-        double nuevoFactor = Math.random(); // Esto es solo un ejemplo; ajusta la lógica según el requerimiento.
-        producto.setFactorDeRotacion(nuevoFactor);
-
-        repository.guardar(producto);
+        double costoVentas = movimientoRepositoryPort.sumarCostoVentasPorProducto(idProducto); // debes definir este método
+        double inventarioInicial = producto.getInventarioInicial(); // debes guardar este dato cuando inicia el período
+        double inventarioFinal = producto.getStock(); // stock actual
+        double inventarioPromedio = (inventarioInicial + inventarioFinal) / 2.0;
+        double rotacion = inventarioPromedio > 0 ? costoVentas / inventarioPromedio : 0.0;
+        producto.setFactorDeRotacion(rotacion);
+         return repository.guardar(producto);
     }
 }

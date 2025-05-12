@@ -1,5 +1,6 @@
 package com.example.inventario.infrastructure.adapters.in;
 
+import com.example.inventario.application.service.StockService;
 import com.example.inventario.domain.exceptions.ProductoNotFoundException;
 import com.example.inventario.domain.model.Producto;
 import com.example.inventario.domain.ports.in.ProductoUseCase;
@@ -10,13 +11,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin
 @RestController
 @RequestMapping("/api/productos")
 @Validated
@@ -24,6 +26,8 @@ public class ProductoController {
 
     private final ProductoUseCase productoUseCase;
     private final ProductoMapper mapper;
+    @Autowired
+    private StockService stockService;
 
     public ProductoController(ProductoUseCase productoUseCase, ProductoMapper mapper) {
         this.productoUseCase = productoUseCase;
@@ -99,5 +103,11 @@ public class ProductoController {
         } catch (ProductoNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PostMapping("/verificar-stock")
+    public void verificarStock(@RequestBody Producto producto) {
+        // Verificar si el stock es bajo
+        stockService.verificarStockBajo(producto, 10);
     }
 }
